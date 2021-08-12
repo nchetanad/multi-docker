@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install: 
+  - docker build -t nchetanad/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run nchetanad/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t nchetanad/multi-client ./client
+  - docker build -t nchetanad/multi-nginx ./nginx
+  - docker build -t nchetanad/multi-server ./server
+  - docker build -t nchetanad/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push nchetanad/multi-client
+  - docker push nchetanad/multi-nginx
+  - docker push nchetanad/multi-server
+  - docker push nchetanad/multi-worker
